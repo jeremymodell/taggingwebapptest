@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Image & Text Input App</title>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+    }
+    .images {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+    }
+    /* Left container for _slide.jpg */
+    .images .slide {
+      flex: 1.4;
+      text-align: center;
+      padding-right: 10px;
+    }
+    /* Right container for _sleeve.jpg */
+    .images .sleeve {
+      flex: 1;
+      text-align: center;
+      padding-left: 10px;
+    }
+    /* Wrap image in a container to provide spacing for buttons */
+    .image-wrapper {
+      margin-bottom: 140px; /* space between image and buttons */
+    }
+    .images img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.3s ease; /* Smooth rotation */
+    }
+    .input-fields {
+      margin-left: 20px;
+      max-width: 800px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table td, table th {
+      padding: 5px;
+      vertical-align: top;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    button.copy-btn {
+      margin-top: 20px;
+    }
+    .rotate-buttons {
+      margin-top: 10px;
+    }
+    .rotate-buttons button {
+      margin: 2px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Enter Data for Image Pair</h1>
+  <form method="post">
+    <div class="container">
+      <!-- Images Section -->
+      <div class="images">
+        <div class="slide">
+          <p><strong>{{ slide }}</strong></p>
+          <div class="image-wrapper">
+            <img id="slideImage" src="{{ url_for('static', filename='images/' + slide) }}" alt="Slide Image">
+          </div>
+          <div class="rotate-buttons">
+            <button type="button" onclick="rotateImage('slideImage', -90)">Rotate Left</button>
+            <button type="button" onclick="rotateImage('slideImage', 90)">Rotate Right</button>
+          </div>
+        </div>
+        <div class="sleeve">
+          <p><strong>{{ sleeve }}</strong></p>
+          <div class="image-wrapper">
+            <img id="sleeveImage" src="{{ url_for('static', filename='images/' + sleeve) }}" alt="Sleeve Image">
+          </div>
+          <div class="rotate-buttons">
+            <button type="button" onclick="rotateImage('sleeveImage', -90)">Rotate Left</button>
+            <button type="button" onclick="rotateImage('sleeveImage', 90)">Rotate Right</button>
+          </div>
+        </div>
+      </div>
+      <!-- Input Fields Section -->
+      <div class="input-fields">
+        <table border="1">
+          <tr>
+            <th>User Input</th>
+            <th></th>
+            <th>AI Guess</th>
+          </tr>
+          {% for field in fields %}
+          <tr>
+            <td>
+              <label for="user_{{ field.key }}">{{ field.label }}:</label><br>
+              {% if field.key == "additional_remarks" %}
+                <textarea id="user_{{ field.key }}" name="{{ field.key }}" rows="3"></textarea>
+              {% else %}
+                <input type="text" id="user_{{ field.key }}" name="{{ field.key }}" />
+              {% endif %}
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+              <button type="button" class="copy-btn" onclick="copyValue('{{ field.key }}')">Copy ←</button>
+            </td>
+            <td>
+              <label for="ai_{{ field.key }}">{{ field.label }} (AI Guess):</label><br>
+              {% if field.key == "additional_remarks" %}
+                <textarea id="ai_{{ field.key }}" disabled rows="3">{{ ai_data.get(field.ai_key, '') }}</textarea>
+              {% else %}
+                <input type="text" id="ai_{{ field.key }}" value="{{ ai_data.get(field.ai_key, '') }}" disabled />
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+        <br>
+        <button type="submit">Next</button>
+      </div>
+    </div>
+  </form>
+  <script>
+    var rotations = { slideImage: 0, sleeveImage: 0 };
+    function rotateImage(id, degree) {
+      rotations[id] = (rotations[id] + degree) % 360;
+      document.getElementById(id).style.transform = 'rotate(' + rotations[id] + 'deg)';
+    }
+    function copyValue(key) {
+      var aiField = document.getElementById("ai_" + key);
+      var userField = document.getElementById("user_" + key);
+      if (aiField && userField) {
+        userField.value = aiField.value;
+      }
+    }
+  </script>
+</body>
+</html>
